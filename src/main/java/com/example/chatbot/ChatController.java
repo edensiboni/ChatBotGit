@@ -8,10 +8,21 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "*")
 public class ChatController {
 
-    private final ChatService chatService = AiServices.create(
-        ChatService.class,
-        OpenAiChatModel.withApiKey(System.getenv("OPENAI_API_KEY"))
-    );
+    private final ChatService chatService;
+
+    public ChatController() {
+        String apiKey = System.getenv("OPENAI_API_KEY");
+        if (apiKey == null || apiKey.isEmpty()) {
+            throw new IllegalStateException("OPENAI_API_KEY environment variable not set.");
+        }
+
+        this.chatService = AiServices.create(
+            ChatService.class,
+            OpenAiChatModel.builder()
+                .apiKey(apiKey)
+                .build()
+        );
+    }
 
     @PostMapping("/chat")
     public String chat(@RequestBody String message) {
